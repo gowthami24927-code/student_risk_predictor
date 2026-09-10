@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Smart Student - Risk Predictor</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #F1F5F9;
+            color: #1E293B;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 35px 0;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            color: #0F172A;
+            animation: titleAppear 1.2s ease;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            color: #0F766E;
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #0F172A;
+            font-size: 21px;
+        }
+
+        /* Student profile */
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .profile-grid input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* Sliders */
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .value {
+            color: #0F766E;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #0F766E;
+            cursor: pointer;
+        }
+
+        select {
+            width: 100%;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            font-size: 15px;
+        }
+
+        /* Buttons */
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 13px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .predict-btn {
+            background: #0F766E;
+            color: white;
+            flex: 1;
+        }
+
+        .reset-btn {
+            background: #E2E8F0;
+            color: #1E293B;
+            flex: 1;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Risk meter */
+
+        .risk-meter {
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            margin: 10px auto 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                conic-gradient(
+                    #0F766E 0deg,
+                    #0F766E 0deg,
+                    #E2E8F0 0deg
+                );
+
+            transition: background 0.7s ease;
+        }
+
+        .meter-inner {
+            width: 165px;
+            height: 165px;
+            border-radius: 50%;
+            background: white;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .meter-number {
+            font-size: 38px;
+            font-weight: bold;
+            color: #0F172A;
+        }
+
+        .meter-text {
+            font-size: 14px;
+            color: #64748B;
+        }
+
+        /* Risk label */
+
+        .overall-risk {
+            text-align: center;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 21px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            transition: all 0.5s ease;
+        }
+
+        .risk-low {
+            background: #DCFCE7;
+            color: #166534;
+            border: 2px solid #22C55E;
+        }
+
+        .risk-medium {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 2px solid #F59E0B;
+        }
+
+        .risk-high {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 2px solid #EF4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Probability bars */
+
+        .probability {
+            margin-bottom: 20px;
+        }
+
+        .prob-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        .bar {
+            width: 100%;
+            height: 13px;
+            background: #E2E8F0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #0F766E;
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        /* Reasons */
+
+        .reason {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #F8FAFC;
+            border-left: 4px solid #0F766E;
+            border-radius: 5px;
+        }
+
+        .no-risk {
+            color: #166534;
+            background: #DCFCE7;
+        }
+
+        /* Recommendation */
+
+        .recommendation {
+            background: #F0FDFA;
+            border-left: 5px solid #0F766E;
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+
+        /* Chart */
+
+        .chart-container {
+            height: 300px;
+        }
+
+        .status {
+            text-align: center;
+            color: #64748B;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        @keyframes pulse {
+
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+
+        }
+
+        @keyframes titleAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+        }
+
+        @media(max-width: 800px) {
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <h1>SMART STUDENT</h1>
+
+    <div class="subtitle">
+        SMART CAMPUS RISK PREDICTOR
+    </div>
+
+
+    <div class="grid">
+
+
+        <!-- LEFT SIDE -->
+
+        <div>
+
+
+            <!-- Student Profile -->
+
+            <div class="card">
+
+                <h2>👤 Student Profile</h2>
+
+                <div class="profile-grid">
+
+                    <input
+                        type="text"
+                        id="studentName"
+                        placeholder="Student Name"
+                    >
+
+                    <input
+                        type="text"
+                        id="studentID"
+                        placeholder="Student ID"
+                    >
+
+                    <input
+                        type="text"
+                        id="department"
+                        placeholder="Department"
+                    >
+
+                    <input
+                        type="text"
+                        id="year"
+                        placeholder="Year"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <!-- Student Evidence -->
+
+            <div class="card">
+
+                <h2>📊 Student Evidence</h2>
+
+
+                <!-- Attendance -->
+
+                <div class="input-group">
+
+                    <div class="input-title">
+
+                        <span>Attendance Percentage</span>
+
+                        <span
+                            class="value"
+                            id="attendanceValue"
+                        >
+                            70%
+                        </span>
+
+                    </div>
+
+                    <input
+                        type="range"
+                        id="attendance"
+                        min="0"
+                        max="100"
+                        value="70"
+                    >
+
+                </div>
+
+
+                <!-- Marks -->
+
+                <div class="input-group">
+
+                    <div class="input-title">
+
+                        <span>Average Marks</span>
+
+                        <span
+                            class="value"
+                            id="marksValue"
+                        >
+                            60
+                        </span>
+
+                    </div>
+
+                    <input
+                        type="range"
+                        id="marks"
+                        min="0"
+                        max="100"
+                        value="60"
+                    >
+
+                </div>
+
+
+                <!-- Assignments -->
+
+                <div class="input-group">
+
+                    <div class="input-title">
+
+                        <span>Assignments Submitted</span>
+
+                        <span
+                            class="value"
+                            id="assignmentsValue"
+                        >
+                            6
+                        </span>
+
+                    </div>
+
+                    <input
+                        type="range"
+                        id="assignments"
+                        min="0"
+                        max="10"
+                        value="6"
+                    >
+
+                </div>
+
+
+                <!-- Late Submissions -->
+
+                <div class="input-group">
+
+                    <div class="input-title">
+
+                        <span>Late Submissions</span>
+
+                        <span
+                            class="value"
+                            id="lateValue"
+                        >
+                            2
+                        </span>
+
+                    </div>
+
+                    <input
+                        type="range"
+                        id="late"
+                        min="0"
+                        max="10"
+                        value="2"
+                    >
+
+                </div>
+
+
+                <!-- Previous Failures -->
+
+                <div class="input-group">
+
+                    <div class="input-title">
+
+                        <span>Previous Failures</span>
+
+                        <span
+                            class="value"
+                            id="failuresValue"
+                        >
+                            0
+                        </span>
+
+                    </div>
+
+                    <input
+                        type="range"
+                        id="failures"
+                        min="0"
+                        max="5"
+                        value="0"
+                    >
+
+                </div>
+
+
+                <!-- Attendance Trend -->
+
+                <div class="input-group">
+
+                    <div class="input-title">
+
+                        <span>Attendance Trend</span>
+
+                    </div>
+
+                    <select id="trend">
+
+                        <option value="Increasing">
+                            Increasing
+                        </option>
+
+                        <option value="Stable" selected>
+                            Stable
+                        </option>
+
+                        <option value="Decreasing">
+                            Decreasing
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Buttons -->
+
+                <div class="buttons">
+
+                    <button
+                        class="predict-btn"
+                        onclick="predictRisk()"
+                    >
+                        🔍 Predict Risk
+                    </button>
+
+                    <button
+                        class="reset-btn"
+                        onclick="resetForm()"
+                    >
+                        ↻ Reset
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="status"
+                    id="status"
+                >
+                    Move a slider to see live prediction
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- RIGHT SIDE -->
+
+        <div>
+
+
+            <!-- Overall Risk -->
+
+            <div class="card">
+
+                <h2>🎯 Overall Risk</h2>
+
+
+                <div
+                    class="risk-meter"
+                    id="riskMeter"
+                >
+
+                    <div class="meter-inner">
+
+                        <div
+                            class="meter-number"
+                            id="meterNumber"
+                        >
+                            0%
+                        </div>
+
+                        <div class="meter-text">
+                            Dropout Risk
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="overall-risk risk-low"
+                    id="overallRisk"
+                >
+                    🟢 LOW RISK
+                </div>
+
+
+                <!-- Absenteeism -->
+
+                <div class="probability">
+
+                    <div class="prob-title">
+
+                        <span>
+                            Absenteeism Risk
+                        </span>
+
+                        <span id="absenteeismText">
+                            0%
+                        </span>
+
+                    </div>
+
+                    <div class="bar">
+
+                        <div
+                            class="bar-fill"
+                            id="absenteeismBar"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Late Submission -->
+
+                <div class="probability">
+
+                    <div class="prob-title">
+
+                        <span>
+                            Late Submission Risk
+                        </span>
+
+                        <span id="lateText">
+                            0%
+                        </span>
+
+                    </div>
+
+                    <div class="bar">
+
+                        <div
+                            class="bar-fill"
+                            id="lateBar"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Dropout -->
+
+                <div class="probability">
+
+                    <div class="prob-title">
+
+                        <span>
+                            Dropout Risk
+                        </span>
+
+                        <span id="dropoutText">
+                            0%
+                        </span>
+
+                    </div>
+
+                    <div class="bar">
+
+                        <div
+                            class="bar-fill"
+                            id="dropoutBar"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <br>
+
+
+            <!-- Why This Risk -->
+
+            <div class="card">
+
+                <h2>💡 Why This Risk?</h2>
+
+                <div id="reasons">
+
+                    <div class="reason no-risk">
+
+                        No prediction yet.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <br>
+
+
+    <!-- Risk Chart -->
+
+    <div class="card">
+
+        <h2>📈 Risk Comparison</h2>
+
+        <div class="chart-container">
+
+            <canvas id="riskChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <br>
+
+
+    <!-- Recommendation -->
+
+    <div class="card">
+
+        <h2>📝 Recommendation</h2>
+
+        <div
+            class="recommendation"
+            id="recommendation"
+        >
+
+            Enter student evidence and predict the risk.
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+/* =====================================
+   GET INPUT ELEMENTS
+===================================== */
+
+const attendance =
+    document.getElementById("attendance");
+
+const marks =
+    document.getElementById("marks");
+
+const assignments =
+    document.getElementById("assignments");
+
+const late =
+    document.getElementById("late");
+
+const failures =
+    document.getElementById("failures");
+
+const trend =
+    document.getElementById("trend");
+
+
+/* =====================================
+   UPDATE SLIDER VALUES
+===================================== */
+
+function updateValues() {
+
+    document.getElementById(
+        "attendanceValue"
+    ).innerText =
+        attendance.value + "%";
+
+
+    document.getElementById(
+        "marksValue"
+    ).innerText =
+        marks.value;
+
+
+    /*
+       If assignments = 10,
+       display 10+
+    */
+
+    if (assignments.value == 10) {
+
+        document.getElementById(
+            "assignmentsValue"
+        ).innerText = "10+";
+
+    }
+
+    else {
+
+        document.getElementById(
+            "assignmentsValue"
+        ).innerText =
+            assignments.value;
+
+    }
+
+
+    /*
+       If late submissions = 10,
+       display 10+
+    */
+
+    if (late.value == 10) {
+
+        document.getElementById(
+            "lateValue"
+        ).innerText = "10+";
+
+    }
+
+    else {
+
+        document.getElementById(
+            "lateValue"
+        ).innerText =
+            late.value;
+
+    }
+
+
+    document.getElementById(
+        "failuresValue"
+    ).innerText =
+        failures.value;
+
+}
+
+
+/* =====================================
+   CREATE CHART
+===================================== */
+
+const ctx =
+    document
+        .getElementById("riskChart")
+        .getContext("2d");
+
+
+let riskChart = new Chart(ctx, {
+
+    type: "bar",
+
+    data: {
+
+        labels: [
+            "Absenteeism",
+            "Late Submission",
+            "Dropout"
+        ],
+
+        datasets: [{
+
+            label: "Risk Probability (%)",
+
+            data: [0, 0, 0],
+
+            borderWidth: 1
+
+        }]
+
+    },
+
+    options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true,
+
+                max: 100
+
+            }
+
+        }
+
+    }
+
+});
+
+
+/* =====================================
+   PREDICT RISK
+===================================== */
+
+async function predictRisk() {
+
+
+    updateValues();
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "Calculating Bayesian risk...";
+
+
+    const inputData = {
+
+        attendance:
+            attendance.value,
+
+        marks:
+            marks.value,
+
+        assignments:
+            assignments.value,
+
+        late_submissions:
+            late.value,
+
+        failures:
+            failures.value,
+
+        trend:
+            trend.value
+
+    };
+
+
+    try {
+
+
+        const response =
+            await fetch(
+                "/predict",
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify(inputData)
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        /* =====================================
+           GET PROBABILITIES
+        ===================================== */
+
+        let absenteeism =
+            data.absenteeism_probability;
+
+        let lateRisk =
+            data.late_probability;
+
+        let dropout =
+            data.dropout_probability;
+
+
+        /* =====================================
+           UPDATE PROBABILITY BARS
+        ===================================== */
+
+        document.getElementById(
+            "absenteeismBar"
+        ).style.width =
+            absenteeism + "%";
+
+
+        document.getElementById(
+            "lateBar"
+        ).style.width =
+            lateRisk + "%";
+
+
+        document.getElementById(
+            "dropoutBar"
+        ).style.width =
+            dropout + "%";
+
+
+        document.getElementById(
+            "absenteeismText"
+        ).innerText =
+            absenteeism + "%";
+
+
+        document.getElementById(
+            "lateText"
+        ).innerText =
+            lateRisk + "%";
+
+
+        document.getElementById(
+            "dropoutText"
+        ).innerText =
+            dropout + "%";
+
+
+        /* =====================================
+           UPDATE CIRCULAR RISK METER
+        ===================================== */
+
+        document.getElementById(
+            "meterNumber"
+        ).innerText =
+            dropout + "%";
+
+
+        let angle =
+            dropout * 3.6;
+
+
+        document.getElementById(
+            "riskMeter"
+        ).style.background =
+
+            "conic-gradient(" +
+
+            "#0F766E " +
+
+            angle +
+
+            "deg, " +
+
+            "#E2E8F0 " +
+
+            angle +
+
+            "deg)";
+
+
+        /* =====================================
+           UPDATE OVERALL RISK
+        ===================================== */
+
+        let overallRisk =
+            document.getElementById(
+                "overallRisk"
+            );
+
+
+        overallRisk.classList.remove(
+
+            "risk-low",
+
+            "risk-medium",
+
+            "risk-high"
+
+        );
+
+
+        if (data.risk_level === "HIGH") {
+
+            overallRisk.innerText =
+                "🔴 HIGH RISK";
+
+            overallRisk.classList.add(
+                "risk-high"
+            );
+
+        }
+
+        else if (
+            data.risk_level === "MEDIUM"
+        ) {
+
+            overallRisk.innerText =
+                "🟠 MEDIUM RISK";
+
+            overallRisk.classList.add(
+                "risk-medium"
+            );
+
+        }
+
+        else {
+
+            overallRisk.innerText =
+                "🟢 LOW RISK";
+
+            overallRisk.classList.add(
+                "risk-low"
+            );
+
+        }
+
+
+        /* =====================================
+           UPDATE RISK FACTORS
+        ===================================== */
+
+        let reasonsDiv =
+            document.getElementById(
+                "reasons"
+            );
+
+
+        reasonsDiv.innerHTML = "";
+
+
+        for (
+            let i = 0;
+            i < data.reasons.length;
+            i++
+        ) {
+
+
+            let div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "reason";
+
+
+            div.innerText =
+                "⚠ " +
+                data.reasons[i];
+
+
+            reasonsDiv.appendChild(
+                div
+            );
+
+        }
+
+
+        /* =====================================
+           UPDATE RECOMMENDATION
+        ===================================== */
+
+        document.getElementById(
+            "recommendation"
+        ).innerText =
+            data.recommendation;
+
+
+        /* =====================================
+           UPDATE CHART
+        ===================================== */
+
+        riskChart
+            .data
+            .datasets[0]
+            .data = [
+
+                absenteeism,
+
+                lateRisk,
+
+                dropout
+
+            ];
+
+
+        riskChart.update();
+
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "✓ Prediction updated using Bayesian Network";
+
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "Error connecting to prediction server.";
+
+    }
+
+}
+
+
+/* =====================================
+   LIVE PREDICTION
+===================================== */
+
+let timer;
+
+
+function livePrediction() {
+
+
+    updateValues();
+
+
+    clearTimeout(timer);
+
+
+    timer = setTimeout(
+
+        function() {
+
+            predictRisk();
+
+        },
+
+        400
+
+    );
+
+}
+
+
+/* =====================================
+   SLIDER EVENTS
+===================================== */
+
+attendance.addEventListener(
+    "input",
+    livePrediction
+);
+
+
+marks.addEventListener(
+    "input",
+    livePrediction
+);
+
+
+assignments.addEventListener(
+    "input",
+    livePrediction
+);
+
+
+late.addEventListener(
+    "input",
+    livePrediction
+);
+
+
+failures.addEventListener(
+    "input",
+    livePrediction
+);
+
+
+trend.addEventListener(
+    "change",
+    predictRisk
+);
+
+
+/* =====================================
+   RESET FORM
+===================================== */
+
+function resetForm() {
+
+
+    attendance.value = 70;
+
+    marks.value = 60;
+
+    assignments.value = 6;
+
+    late.value = 2;
+
+    failures.value = 0;
+
+    trend.value = "Stable";
+
+
+    document.getElementById(
+        "studentName"
+    ).value = "";
+
+
+    document.getElementById(
+        "studentID"
+    ).value = "";
+
+
+    document.getElementById(
+        "department"
+    ).value = "";
+
+
+    document.getElementById(
+        "year"
+    ).value = "";
+
+
+    updateValues();
+
+
+    /* Reset meter */
+
+    document.getElementById(
+        "meterNumber"
+    ).innerText = "0%";
+
+
+    document.getElementById(
+        "riskMeter"
+    ).style.background =
+
+        "conic-gradient(" +
+
+        "#0F766E 0deg, " +
+
+        "#E2E8F0 0deg)";
+
+
+    /* Reset bars */
+
+    document.getElementById(
+        "absenteeismBar"
+    ).style.width = "0%";
+
+
+    document.getElementById(
+        "lateBar"
+    ).style.width = "0%";
+
+
+    document.getElementById(
+        "dropoutBar"
+    ).style.width = "0%";
+
+
+    /* Reset percentages */
+
+    document.getElementById(
+        "absenteeismText"
+    ).innerText = "0%";
+
+
+    document.getElementById(
+        "lateText"
+    ).innerText = "0%";
+
+
+    document.getElementById(
+        "dropoutText"
+    ).innerText = "0%";
+
+
+    /* Reset overall risk */
+
+    let overallRisk =
+        document.getElementById(
+            "overallRisk"
+        );
+
+
+    overallRisk.innerText =
+        "🟢 LOW RISK";
+
+
+    overallRisk.className =
+        "overall-risk risk-low";
+
+
+    /* Reset reasons */
+
+    document.getElementById(
+        "reasons"
+    ).innerHTML =
+
+        '<div class="reason no-risk">' +
+
+        'No prediction yet.' +
+
+        '</div>';
+
+
+    /* Reset recommendation */
+
+    document.getElementById(
+        "recommendation"
+    ).innerText =
+        "Enter student evidence and predict the risk.";
+
+
+    /* Reset chart */
+
+    riskChart
+        .data
+        .datasets[0]
+        .data = [0, 0, 0];
+
+
+    riskChart.update();
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "Move a slider to see live prediction";
+
+}
+
+
+/* =====================================
+   INITIAL DISPLAY
+===================================== */
+
+updateValues();
+
+</script>
+
+
+</body>
+
+</html>
